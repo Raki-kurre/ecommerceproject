@@ -1,0 +1,30 @@
+package com.project.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.project.entity.Admin;
+import com.project.repository.AdminRepository;
+
+@Service
+public class AdminService {
+
+    @Autowired
+    private AdminRepository arepo;
+
+    public void save(Admin a) {
+        arepo.save(a);
+    }
+
+    public List<Admin> fetchAll() {
+        return arepo.findAll();
+    }
+
+    // ✅ ADD THIS METHOD (CRITICAL)
+    public Optional<Admin> findByEmail(String email) {
+        return arepo.findByEmail(email);
+    }
+}

@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+ <title> 🍽️ Spark Cloud Kitchen</title>
+     <link rel="icon" type="image/png" href="/images/spark.png">
+
+<link rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+<link rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+
+<style>
+body {
+    background: #f4f6f9;
+}
+
+.admin-card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+    transition: 0.3s;
+}
+.admin-card:hover {
+    transform: translateY(-4px);
+}
+
+.order-items li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.order-items img {
+    width: 45px;
+    height: 45px;
+    border-radius: 6px;
+    margin-right: 10px;
+    object-fit: cover;
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<!-- DASHBOARD CARDS -->
+<div class="container mt-5">
+    <div class="row">
+
+        <div class="col-md-4 mb-4">
+            <div class="admin-card text-center">
+                <i class="fas fa-layer-group fa-2x mb-2"></i>
+                <h5>Categories</h5>
+                <a th:href="@{/admin/categories}" class="btn btn-primary btn-sm">
+                    Manage
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="admin-card text-center">
+                <i class="fas fa-utensils fa-2x mb-2"></i>
+                <h5>Products</h5>
+                <a th:href="@{/admin/products}" class="btn btn-primary btn-sm">
+                    Manage
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ================= ORDERS ================= -->
+<div class="container mt-5">
+    <h3 class="mb-3">📦 Orders</h3>
+
+    <div class="alert alert-info" th:if="${orders.empty}">
+        No orders placed yet.
+    </div>
+
+    <table class="table table-bordered table-hover"
+           th:if="${!orders.empty}">
+        <thead class="thead-dark">
+        <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Phone</th>
+            <th>Items Ordered</th>
+            <th>Payment</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Address</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="order : ${orders}">
+
+            <!-- ID -->
+            <td th:text="${order.id}"></td>
+
+            <!-- USER -->
+            <td th:text="${order.user.email}"></td>
+
+            <!-- PHONE -->
+            <td>
+                <span th:if="${order.user != null}"
+                      th:text="${order.user.phone}"></span>
+                <span th:if="${order.user == null}" class="text-muted">N/A</span>
+            </td>
+
+            <!-- ITEMS -->
+            <td>
+                <ul class="order-items list-unstyled mb-0">
+                    <li th:each="item : ${order.items}">
+                        <img th:src="@{/productImages/{img}(img=${item.product.imageName})}">
+                        <div>
+                            <b th:text="${item.product.name}"></b><br>
+                            Qty: <span th:text="${item.quantity}"></span>
+                            <span th:if="${item.product.weight != null}">
+                                | <span th:text="${item.product.weight}"></span> g
+                            </span>
+                        </div>
+                    </li>
+                </ul>
+            </td>
+
+            <!-- PAYMENT -->
+            <td th:text="${order.paymentMethod}"></td>
+
+            <!-- AMOUNT -->
+            <td>₹ <span th:text="${order.totalAmount}"></span></td>
+
+            <!-- STATUS ✅ FIXED -->
+            <td>
+                <span th:if="${order.status.name() == 'CANCELLED'}"
+                      class="badge badge-danger">
+                    ❌ Cancelled by <span th:text="${order.cancelledBy}"></span>
+                </span>
+
+                <span th:if="${order.status.name() != 'CANCELLED'}"
+                      class="badge badge-secondary"
+                      th:text="${order.status}">
+                </span>
+            </td>
+
+            <!-- ADDRESS -->
+            <td>
+                <div th:if="${order.address != null}">
+                    <span th:text="${order.address.house}"></span>,
+                    <span th:text="${order.address.area}"></span><br>
+                    <span th:text="${order.address.landmark}"></span><br>
+                    <span th:text="${order.address.city}"></span> -
+                    <span th:text="${order.address.pincode}"></span>
+                </div>
+                <span th:if="${order.address == null}" class="text-muted">
+                    Address not available
+                </span>
+            </td>
+
+            <!-- ACTIONS -->
+            <td>
+
+                <form th:action="@{/admin/orders/{id}/status(id=${order.id})}"
+                      method="post" class="mb-1">
+                    <input type="hidden" name="status" value="PREPARING"/>
+                    <button class="btn btn-warning btn-sm w-100">Preparing</button>
+                </form>
+
+                <form th:action="@{/admin/orders/{id}/status(id=${order.id})}"
+                      method="post" class="mb-1">
+                    <input type="hidden" name="status" value="OUT_FOR_DELIVERY"/>
+                    <button class="btn btn-info btn-sm w-100">Out for Delivery</button>
+                </form>
+
+                <form th:action="@{/admin/orders/{id}/status(id=${order.id})}"
+                      method="post" class="mb-1">
+                    <input type="hidden" name="status" value="DELIVERED"/>
+                    <button class="btn btn-success btn-sm w-100">Delivered</button>
+                </form>
+
+                <form th:action="@{/admin/orders/delete/{id}(id=${order.id})}"
+                      method="post"
+                      onsubmit="return confirm('Are you sure you want to delete this order?');">
+                    <button class="btn btn-danger btn-sm w-100">
+                        🗑 Delete Order
+                    </button>
+                </form>
+
+            </td>
+
+        </tr>
+        </tbody>
+    </table>
+    <a th:href="@{/}" class="btn btn-secondary mt-2 w-10">
+    ← Back to Home
+</a>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

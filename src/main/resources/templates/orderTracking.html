@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title> 🍽️ Spark Cloud Kitchen</title>
+     <link rel="icon" type="image/png" href="/images/spark.png">
+
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+
+    <style>
+        body { background: #f4f6f9; }
+
+        .tracker {
+            position: relative;
+            margin-left: 20px;
+        }
+
+        .tracker::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: #ddd;
+        }
+
+        .tracker-step {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 30px;
+        }
+
+        .tracker-step::before {
+            content: '';
+            position: absolute;
+            left: 3px;
+            top: 5px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .tracker-step.active::before { background: #28a745; }
+        .tracker-step.cancelled::before { background: #dc3545; }
+
+        .tracker-title { font-weight: 600; }
+
+        .eta-box {
+            background: #e8f5e9;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container mt-5">
+
+    <h4 th:if="${order != null}">
+        🚚 Track Order #<span th:text="${order.id}"></span>
+    </h4>
+
+    <!-- ✅ CANCEL MESSAGE (ONLY ONCE, DB BASED) -->
+    <div th:if="${order != null and order.status.name() == 'CANCELLED'}"
+         class="alert alert-danger mt-3">
+        ❌ Your order has been cancelled. Refund will be processed shortly.
+    </div>
+
+    <div th:if="${message}" class="alert alert-warning mt-3">
+        <span th:text="${message}"></span>
+    </div>
+
+    <p class="text-muted" th:if="${order != null}">
+        Ordered at:
+        <span th:text="${#temporals.format(orderTime,'dd MMM yyyy, hh:mm a')}"></span>
+    </p>
+
+    <!-- ETA -->
+    <div class="eta-box mb-4"
+         th:if="${order != null
+          and order.status.name() != 'DELIVERED'
+          and order.status.name() != 'CANCELLED'}">
+        ⏱ Estimated delivery in <span id="timer"></span>
+    </div>
+
+    <!-- TRACKER -->
+    <div class="tracker" th:if="${order != null}">
+
+        <div class="tracker-step active">
+            <div class="tracker-title">📄 Order Placed</div>
+        </div>
+
+        <div class="tracker-step"
+             th:classappend="${order.status.name() != 'PAID'} ? '' : 'active'">
+            <div class="tracker-title">✅ Order Confirmed</div>
+        </div>
+
+        <div class="tracker-step"
+             th:classappend="${order.status.name() == 'PREPARING'} ? 'active'">
+            <div class="tracker-title">🍳 Order Processed</div>
+        </div>
+
+        <div class="tracker-step"
+             th:classappend="${order.status.name() == 'OUT_FOR_DELIVERY'} ? 'active'">
+            <div class="tracker-title">🚴 Out for Delivery</div>
+        </div>
+
+        <div class="tracker-step"
+             th:classappend="${order.status.name() == 'DELIVERED'} ? 'active'">
+            <div class="tracker-title">🎉 Delivered</div>
+        </div>
+
+        <!-- CANCELLED STEP -->
+        <div class="tracker-step cancelled"
+             th:if="${order.status.name() == 'CANCELLED'}">
+            <div class="tracker-title text-danger">❌ Order Cancelled</div>
+        </div>
+
+    </div>
+
+    <!-- ✅ SINGLE CANCEL BUTTON -->
+    <form th:if="${order != null
+          and order.status.name() != 'DELIVERED'
+          and order.status.name() != 'CANCELLED'}"
+          th:action="@{/orders/cancel/{id}(id=${order.id})}"
+          method="post"
+          onsubmit="return confirm('Are you sure you want to cancel this order?')">
+
+        <button class="btn btn-danger mt-4">❌ Cancel Order</button>
+    </form>
+  <div class="col-md-2 text-right">
+            <a th:href="@{/}" class="btn btn-outline-dark btn-sm">← Home</a>
+        </div>
+</div>
+
+<script>
+    setTimeout(() => window.location.reload(), 10000);
+</script>
+
+<script th:inline="javascript">
+    const deliveryTime = new Date('[[${deliveryTime}]]');
+    const timer = document.getElementById("timer");
+
+    if (timer) {
+        setInterval(() => {
+            const diff = deliveryTime - new Date();
+            if (diff <= 0) {
+                timer.innerText = "Arriving now";
+                return;
+            }
+            timer.innerText =
+                Math.floor(diff / 60000) + "m " +
+                Math.floor((diff % 60000) / 1000) + "s";
+        }, 1000);
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

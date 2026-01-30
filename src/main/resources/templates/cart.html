@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title> 🍽️ Spark Cloud Kitchen</title>
+     <link rel="icon" type="image/png" href="/images/spark.png">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+          href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+
+    <style>
+        body {
+            background: #f4f6f9;
+        }
+        .card-box {
+            background: #fff;
+            padding: 18px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .product-img {
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container mt-4">
+<div class="row">
+
+    <!-- LEFT : CART ITEMS -->
+    <div class="col-md-8">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>🛒 Your Cart</h4>
+            <a th:href="@{/shop}" class="btn btn-outline-dark btn-sm">
+                ← Back to Shop
+            </a>
+        </div>
+
+        <!-- EMPTY CART -->
+        <div th:if="${cartItems.isEmpty()}" class="card-box">
+            <p class="mb-2">Your cart is empty</p>
+            <a th:href="@{/shop}" class="btn btn-primary">
+                Continue Shopping
+            </a>
+        </div>
+
+        <!-- CART ITEMS -->
+        <div th:each="item : ${cartItems}" class="card-box mb-3 d-flex">
+
+           <img th:src="@{/productImages/{img}(img=${item.product.imageName})}"
+     width="90" height="90"
+     class="product-img mr-3">
+
+            <div class="flex-grow-1">
+                <h6 th:text="${item.product.name}"></h6>
+                <p class="text-muted mb-1">
+                    ₹ <span th:text="${item.product.price}"></span>
+                </p>
+
+                <div class="d-flex align-items-center">
+                    <a th:href="@{/cart/decrease/{id}(id=${item.product.id})}"
+                       class="btn btn-outline-secondary qty-btn">−</a>
+
+                    <span class="mx-3 font-weight-bold"
+                          th:text="${item.quantity}"></span>
+
+                    <a th:href="@{/cart/increase/{id}(id=${item.product.id})}"
+                       class="btn btn-outline-secondary qty-btn">+</a>
+                </div>
+            </div>
+
+            <div class="text-right">
+                <p class="font-weight-bold mb-2">
+                    ₹ <span th:text="${item.totalPrice}"></span>
+                </p>
+                <a th:href="@{/cart/remove/{id}(id=${item.product.id})}"
+                   class="btn btn-danger btn-sm">
+                    Remove
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- RIGHT : ADDRESS + BILL -->
+    <div class="col-md-4">
+
+        <!-- ADDRESS -->
+       <div class="card-box mb-3" th:if="${address != null}">
+    <h6>📍 Delivery Address</h6>
+
+    <p class="mb-1">
+        <b th:text="${address.house}"></b>,
+        <span th:text="${address.area}"></span><br>
+        <span th:text="${address.city}"></span> -
+        <span th:text="${address.pincode}"></span>
+    </p>
+
+    <!-- ✅ PHONE NUMBER -->
+    <p class="mb-2 text-muted">
+        📞 <span th:text="${user.phone}"></span>
+    </p>
+
+    <a th:href="@{/address}" class="btn btn-outline-primary btn-sm">
+        Change Address
+    </a>
+</div>
+
+        <div class="card-box mb-3"
+             th:if="${address == null}">
+            <p>No delivery address selected</p>
+            <a th:href="@{/address}" class="btn btn-primary btn-sm">
+                Add Address
+            </a>
+        </div>
+
+        <!-- BILL -->
+        <div class="card-box mb-3">
+            <h6>💳 Bill Details</h6>
+
+            <div class="d-flex justify-content-between">
+                <span>Item Total</span>
+                <span>₹ <span th:text="${total}"></span></span>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <span>Delivery Fee</span>
+                <span>₹ <span th:text="${deliveryFee}"></span></span>
+            </div>
+
+            <hr>
+
+            <div class="d-flex justify-content-between font-weight-bold">
+                <span>To Pay</span>
+                <span>₹ <span th:text="${grandTotal}"></span></span>
+            </div>
+        </div>
+          
+        <!-- PAY -->
+        <div class="card-box text-center">
+            <button class="btn btn-success btn-block"
+                    th:disabled="${cartItems.isEmpty() or address == null}"
+                    onclick="payNow()">
+                PROCEED TO PAY
+            </button>
+            
+        </div>
+
+    </div>
+
+</div>
+</div>
+
+<!-- Razorpay -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+ <script th:inline="javascript">
+function payNow() {
+
+    var amount = /*[[${grandTotal}]]*/ 0;
+    var key = /*[[${razorpayKeyId}]]*/ "";
+
+    var options = {
+        key: key,
+        amount: amount * 100,
+        currency: "INR",
+        name: "Spark Cloud Kitchen",
+        description: "Order Payment",
+
+        handler: function (response) {
+
+            fetch('/payment/success', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body:
+                    'razorpay_payment_id=' + response.razorpay_payment_id +
+                    '&razorpay_order_id=' + response.razorpay_order_id +
+                    '&razorpay_signature=' + response.razorpay_signature
+            })
+            .then(() => {
+                window.location.href = '/orders/track';
+            });
+        },
+
+        theme: { color: "#28a745" }
+    };
+
+    new Razorpay(options).open();
+}
+</script>
+
+</body>
+</html>

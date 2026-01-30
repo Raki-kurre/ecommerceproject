@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+ <title> 🍽️ Spark Cloud Kitchen</title>
+     <link rel="icon" type="image/png" href="/images/spark.png">
+</head>
+<body>
+<form th:action="@{/login/send-otp}" method="post">
+
+    <div class="mb-3 text-start">
+        <label>Phone Number</label>
+        <input type="text"
+               name="phone"
+               class="form-control"
+               placeholder="Enter registered phone number"
+               required>
+    </div>
+
+    <button type="submit" class="btn btn-login w-100 py-2">
+        Send OTP
+    </button>
+
+</form>
+</body>
+</html>

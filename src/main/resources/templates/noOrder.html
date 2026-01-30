@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"> <title> 🍽️ Spark Cloud Kitchen</title>
+     <link rel="icon" type="image/png" href="/images/spark.png">
+
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+</head>
+
+<body>
+
+<div class="container mt-5 text-center">
+    <h3 class="text-danger">❌ No Active Orders</h3>
+
+    <p th:text="${message}"></p>
+
+    <a href="/shop" class="btn btn-primary mt-3">
+        Go to Shop
+    </a>
+</div>
+
+</body>
+</html>

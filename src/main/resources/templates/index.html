@@ -1,0 +1,1302 @@
+<!doctype html>
+<html 
+  lang="en"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+ <title> 🍽️ Spark Cloud Kitchen</title>
+     <link rel="icon" type="image/png" href="/images/spark.png">
+
+<!-- Bootstrap 4 CSS -->
+<link rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+
+<!-- Font Awesome -->
+<link rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+
+
+<style>
+body {
+    overflow-x: hidden;
+}
+.floating-order-btn-top {
+    position: fixed;
+    top: 90px;            /* below navbar */
+    left: 25px;         /* ✅ LEFT side */
+    right: auto;        /* important */
+  
+    z-index: 99999;
+
+    background: linear-gradient(45deg, #ff9800, #ff5722);
+    color: white;
+    font-size: 18px;
+    font-weight: 800;
+    padding: 14px 30px;
+    border-radius: 50px;
+    text-decoration: none;
+
+    box-shadow: 0 0 0 rgba(255, 152, 0, 0.8);
+    animation: pulseGlow 2s infinite, floatBtn 3s ease-in-out infinite;
+    transition: transform 0.3s ease;
+}
+
+.floating-order-btn-top:hover {
+    transform: scale(1.15);
+    color: white;
+    text-decoration: none;
+}
+
+/* Pulse glow */
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255,152,0,0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 22px rgba(255,152,0,0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255,152,0,0);
+    }
+}
+
+/* Floating animation */
+@keyframes floatBtn {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+/* Section animation */
+/* Section fade */
+.fade-section {
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+/* Title */
+.section-title {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #222;
+}
+
+/* Card */
+.food-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+/* Image */
+.food-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+/* Hover – subtle & smooth */
+.food-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+}
+
+.food-card:hover img {
+    transform: scale(1.06);
+}
+
+/* Fade animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* ===== SECTION TITLE ===== */
+.food-video-title {
+    font-weight: 800;
+    color: #ff9800;
+    animation: glowText 2s infinite alternate;
+}
+
+@keyframes glowText {
+    from { text-shadow: 0 0 5px #ff9800; }
+    to { text-shadow: 0 0 18px #ff5722; }
+}
+
+/* ===== VIDEO CARD ===== */
+.video-card {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.video-card:hover {
+    transform: scale(1.08);
+    box-shadow: 0 35px 70px rgba(255, 152, 0, 0.8);
+}
+
+/* ===== VIDEO ===== */
+.food-video {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+}
+
+/* ===== LABEL ===== */
+.video-label {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.6);
+    padding: 6px 16px;
+    border-radius: 30px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    animation: floatText 3s infinite;
+}
+
+@keyframes floatText {
+    0%,100% { transform: translate(-50%,0); }
+    50% { transform: translate(-50%,-6px); }
+}
+
+/* ===== STEAM EFFECT ===== */
+.steam {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    width: 10px;
+    height: 60px;
+    background: rgba(255,255,255,0.6);
+    filter: blur(8px);
+    animation: steam 3s infinite;
+}
+
+@keyframes steam {
+    0% { opacity: 0; transform: translateX(0) translateY(30px); }
+    50% { opacity: 1; }
+    100% { opacity: 0; transform: translateX(-20px) translateY(-50px); }
+}
+
+/* ===== FADE UP ===== */
+.fade-up {
+    opacity: 0;
+    animation: fadeUp 1.2s forwards;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* ================= HEALTHY FOOD MODULE ================= */
+
+.healthy-section {
+    position: relative;
+    background: #fff3f0;
+    padding: 100px 0 150px;
+    overflow: hidden;
+}
+
+.healthy-section::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 120px;
+    background: white;
+    border-top-left-radius: 100% 120px;
+    border-top-right-radius: 100% 120px;
+}
+
+.healthy-title {
+    font-size: 48px;
+    font-weight: 700;
+    color: #e45757;
+}
+
+.healthy-subtitle {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 60px;
+}
+
+/* Feature grid */
+.feature-grid {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.feature-box {
+    width: 130px;
+    height: 130px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: 0.3s;
+}
+
+.feature-box:hover {
+    transform: translateY(-8px);
+}
+
+.feature-box img {
+    width: 45px;
+    margin-bottom: 10px;
+}
+
+.feature-box p {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ACTION BUTTONS */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.order-btn {
+    background: #e45757;
+    color: white;
+    padding: 14px 30px;
+    border-radius: 30px;
+    font-weight: 600;
+}
+
+.contact-btn1 {
+    background: #333;
+    color: white;
+    padding: 14px 30px;
+    border-radius: 30px;
+    width:190px;
+    height:60px;
+    font-weight: 600;
+}
+
+.whatsapp-btn1 {
+    background: #25d366;
+    color: white;
+    width:190px;
+    height:60px;
+    padding: 14px 30px;
+    border-radius: 30px;
+    font-weight: 600;
+}
+
+.action-buttons .btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+/* ===== FULL SCREEN FIRST SLIDE ===== */
+.carousel-item.fullscreen {
+    height: 100vh;
+    position: relative;
+}
+
+.carousel-item.fullscreen img {
+    height: 100vh;
+    object-fit: cover;
+}
+
+/* ===== DARK OVERLAY ===== */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.55);
+    z-index: 5;
+}
+
+/* ===== HERO TEXT ===== */
+.hero-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    text-align: center;
+    z-index: 10;
+}
+
+.hero-text h1 {
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+.hero-text p {
+    font-size: 1.4rem;
+    margin-top: 10px;
+}
+
+/* ===== IMAGE ANIMATION ===== */
+.food-img {
+    height: 350px;
+    object-fit: cover;
+    animation: zoomEffect 6s ease-in-out infinite;
+}
+
+@keyframes zoomEffect {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
+
+/* Fade animation */
+.fade-section {
+    animation: fadeIn 1.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0.2; }
+    to { opacity: 1; }
+}
+
+/* Video style */
+.food-video {
+    height: 220px;
+    object-fit: cover;
+}
+/* ===== HEADING ===== */
+.food-heading {
+    font-weight: 800;
+    color: #ff9800;
+    letter-spacing: 1px;
+    animation: glowText 2s infinite alternate;
+}
+
+@keyframes glowText {
+    from { text-shadow: 0 0 5px #ff9800; }
+    to { text-shadow: 0 0 20px #ff5722; }
+}
+
+/* ===== FOOD CARD ===== */
+.food-card {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 152, 0, 0.15),
+        rgba(255, 87, 34, 0.15)
+    );
+    backdrop-filter: blur(14px);
+    border-radius: 25px;
+    padding: 35px 25px;
+    color: white;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+}
+
+.food-card:hover {
+    transform: translateY(-15px) scale(1.05);
+    box-shadow: 0 35px 70px rgba(255, 152, 0, 0.6);
+}
+
+/* ===== STEAM EFFECT ===== */
+.steam {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    width: 8px;
+    height: 40px;
+    background: rgba(255,255,255,0.5);
+    filter: blur(6px);
+    animation: steam 3s infinite;
+}
+
+@keyframes steam {
+    0% { opacity: 0; transform: translateX(0) translateY(20px); }
+    50% { opacity: 1; }
+    100% { opacity: 0; transform: translateX(-20px) translateY(-40px); }
+}
+
+/* ===== ICON ===== */
+.icon-circle {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    font-size: 34px;
+    color: white;
+}
+
+/* Rotate animation */
+.rotate {
+    animation: rotateIcon 6s linear infinite;
+}
+
+@keyframes rotateIcon {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Bounce animation */
+.bounce {
+    animation: bounceIcon 2s infinite;
+}
+
+@keyframes bounceIcon {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+
+/* ===== BUTTON ===== */
+.btn-order {
+    background: linear-gradient(45deg, #ff9800, #ff5722);
+    border: none;
+    color: white;
+    padding: 10px 26px;
+    border-radius: 40px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    animation: pulseBtn 2s infinite;
+}
+
+.btn-order:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 25px rgba(255, 152, 0, 0.9);
+    color: white;
+}
+
+/* Button pulse */
+@keyframes pulseBtn {
+    0% { box-shadow: 0 0 0 0 rgba(255,152,0,0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(255,152,0,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,152,0,0); }
+}
+
+/* ===== FADE UP ===== */
+.fade-up {
+    opacity: 0;
+    animation: fadeUp 1.2s forwards;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* ================= MOBILE RESPONSIVE FIX ================= */
+@media (max-width: 768px) {
+
+    /* HERO TEXT */
+    .hero-text h1 {
+        font-size: 1.8rem;
+    }
+
+    .hero-text p {
+        font-size: 1rem;
+    }
+
+    /* FLOATING ORDER BUTTON */
+    .floating-order-btn-top {
+        top: auto;
+        bottom: 80px;
+        right: 15px;
+        font-size: 14px;
+        padding: 12px 22px;
+    }
+
+    /* VIDEO HEIGHT */
+    .food-video {
+        height: 180px;
+    }
+
+    /* HEALTHY TITLE */
+    .healthy-title {
+        font-size: 32px;
+    }
+
+    /* FEATURE BOX CENTERING */
+    .feature-grid {
+        gap: 15px;
+    }
+
+    /* ICON SIZE */
+    .icon-circle {
+        width: 70px;
+        height: 70px;
+        font-size: 26px;
+    }
+}
+
+/* ================= SMALL MOBILE (VERY SMALL SCREENS) ================= */
+@media (max-width: 480px) {
+
+    .hero-text h1 {
+        font-size: 1.5rem;
+    }
+
+    .hero-text p {
+        font-size: 0.9rem;
+    }
+
+    .floating-order-btn-top {
+        font-size: 13px;
+        padding: 10px 20px;
+    }
+
+    .food-video {
+        height: 160px;
+    }
+}
+</style>
+</head>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<body>
+
+<!-- ✅ NAVBAR -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<!-- ================= CAROUSEL ================= -->
+<div id="carouselExampleIndicators"
+     class="carousel slide"
+     data-ride="carousel"
+     data-interval="6000">
+
+    <ol class="carousel-indicators">
+        <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+        <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+        <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+        <li data-target="#carouselExampleIndicators" data-slide-to="3"></li>
+    </ol>
+
+   <div id="carouselExampleIndicators"
+     class="carousel slide"
+     data-ride="carousel"
+     data-interval="4000">
+
+    <div class="carousel-inner">
+
+        <div class="carousel-item active">
+            <div class="overlay"></div>
+            <div class="hero-text">
+                <h1>Fresh Home-Made Food</h1>
+                <p>Healthy • Hygienic • Made with Love ❤️</p>
+            </div>
+            <img th:src="@{/images/image4.jpg}" class="d-block w-100">
+        </div>
+
+        <div class="carousel-item">
+            <div class="overlay"></div>
+            <div class="hero-text">
+                <h1>Taste Like Home</h1>
+                <p>Traditional Recipes • Daily Fresh</p>
+            </div>
+            <img th:src="@{/images/image3.jpg}" class="d-block w-100">
+        </div>
+
+        <div class="carousel-item">
+            <div class="overlay"></div>
+            <div class="hero-text">
+                <h1>Spark Cloud Kitchen</h1>
+                <p>Hot Meals • Fast Delivery</p>
+            </div>
+            <img th:src="@{/images/image2.jpg}" class="d-block w-100">
+        </div>
+
+    </div>
+
+    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+    </a>
+
+    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+        <span class="carousel-control-next-icon"></span>
+    </a>
+
+</div>
+<div class="container mt-5">
+    <div class="row g-4 justify-content-center">
+
+        <!-- CATEGORY CARD -->
+        <div class="col-md-3 fade-up" style="animation-delay: 0.1s;">
+            <div class="admin-card text-center">
+                <div class="icon-circle bg-primary">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+
+                <h4 class="mt-3">Categories</h4>
+                <p>Organize and manage food categories</p>
+
+                <a th:href="@{/admin/categories}" class="btn btn-glow">
+                    Manage
+                </a>
+            </div>
+        </div>
+
+        <!-- PRODUCT CARD -->
+        <div class="col-md-3 fade-up" style="animation-delay: 0.3s;">
+            <div class="admin-card text-center">
+                <div class="icon-circle bg-success">
+                    <i class="fas fa-utensils"></i>
+                </div>
+
+                <h4 class="mt-3">Products</h4>
+                <p>Add & update your menu items</p>
+
+                <a th:href="@{/admin/products}" class="btn btn-glow">
+                    Manage
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- ================= DASHBOARD CARDS ================= -->
+<div class="container mt-5">
+    <h2 class="text-center food-heading mb-5">
+        Taste the Love ❤️ Order Fresh Home-Made Food
+    </h2>
+
+    <div class="row g-4 justify-content-center">
+
+        <!-- CATEGORY CARD -->
+        <div class="col-md-3 fade-up" style="animation-delay: 0.1s;">
+            <div class="food-card text-center">
+                <div class="steam"></div>
+
+                <div class="icon-circle bg-warning rotate">
+                    <i class="fas fa-th-large"></i>
+                </div>
+
+                <h4 class="mt-3">Explore Categories</h4>
+                <p>Choose from freshly prepared home-style dishes</p>
+
+                <a th:href="@{/shop}" class="btn btn-order">
+                    View Menu 🍛
+                </a>
+            </div>
+        </div>
+
+        <!-- PRODUCT CARD -->
+        <div class="col-md-3 fade-up" style="animation-delay: 0.3s;">
+            <div class="food-card text-center">
+                <div class="steam"></div>
+
+                <div class="icon-circle bg-danger bounce">
+                    <i class="fas fa-utensils"></i>
+                </div>
+
+                <h4 class="mt-3">Order Your Meal</h4>
+                <p>Hot • Healthy • Hygienic • Home-Made</p>
+
+                <a th:href="@{/shop}" class="btn btn-order">
+                    Order Now 🛒
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ================= HOME MADE FOOD VIDEOS ================= -->
+<div class="container mt-5 food-video-section">
+    <h3 class="text-center mb-4 food-video-title">
+        Home-Made Food Preparation 🍳
+    </h3>
+
+    <div class="row justify-content-center">
+
+        <!-- VIDEO CARD -->
+        <div class="col-md-4 mb-4 fade-up" style="animation-delay:0.1s;">
+            <div class="video-card">
+                <div class="steam"></div>
+                <span class="video-label">Cooking with Love ❤️</span>
+
+                <video class="food-video"
+                       autoplay muted loop playsinline>
+                    <source th:src="@{/videos/food1.mp4}" type="video/mp4">
+                </video>
+            </div>
+        </div>
+
+        <!-- VIDEO CARD -->
+        <div class="col-md-4 mb-4 fade-up" style="animation-delay:0.3s;">
+            <div class="video-card">
+                <div class="steam"></div>
+                <span class="video-label">Fresh & Hygienic 🍲</span>
+
+                <video class="food-video"
+                       autoplay muted loop playsinline>
+                    <source th:src="@{/videos/video2.mp4}" type="video/mp4">
+                </video>
+            </div>
+        </div>
+
+        <!-- VIDEO CARD -->
+        <div class="col-md-4 mb-4 fade-up" style="animation-delay:0.5s;">
+            <div class="video-card">
+                <div class="steam"></div>
+                <span class="video-label">Hot & Healthy 🔥</span>
+
+                <video class="food-video"
+                       autoplay muted loop playsinline>
+                    <source th:src="@{/videos/food1.mp4}" type="video/mp4">
+                </video>
+            </div>
+        </div>
+
+    </div>
+</div>
+  <br><br><br>
+<!-- ================= FOOD IMAGE GRID ================= -->
+<div class="container mt-5 fade-section">
+    <h4 class="text-center mb-4 fw-bold section-title">
+        Fresh Home-Made Dishes 🍲
+    </h4>
+
+    <div class="row g-4">
+
+        <!-- Dish 1 -->
+        <div class="col-md-3 col-sm-6">
+            <div class="food-card text-center">
+                <img src="/images/m1.jpg" class="img-fluid">
+                <div class="food-info">
+                    <h6 class="mt-3 mb-1">Home Style Chicken Curry</h6>
+                    <small class="text-muted">Slow cooked & spicy</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dish 2 -->
+        <div class="col-md-3 col-sm-6">
+            <div class="food-card text-center">
+                <img src="/images/m2.jpg" class="img-fluid">
+                <div class="food-info">
+                    <h6 class="mt-3 mb-1">Veg Dum Biryani</h6>
+                    <small class="text-muted">Aromatic basmati rice</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dish 3 -->
+        <div class="col-md-3 col-sm-6">
+            <div class="food-card text-center">
+                <img src="/images/m3.jpg" class="img-fluid">
+                <div class="food-info">
+                    <h6 class="mt-3 mb-1">Paneer Butter Masala</h6>
+                    <small class="text-muted">Rich & creamy gravy</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dish 4 -->
+        <div class="col-md-3 col-sm-6">
+            <div class="food-card text-center">
+                <img src="/images/food1.jpg" class="img-fluid">
+                <div class="food-info">
+                    <h6 class="mt-3 mb-1">Andhra Meals</h6>
+                    <small class="text-muted">Traditional spicy platter</small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+  <br><br><br>
+<!-- ================= HEALTHY FOOD MODULE ================= -->
+<section class="healthy-section">
+
+    <div class="container text-center">
+        <h2 class="healthy-title">
+            Make your food healthy
+        </h2>
+
+        <p class="healthy-subtitle">
+            Fresh • Hygienic • Home-Made • Crafted with Love ❤️
+        </p>
+
+        <!-- FEATURES -->
+        <div class="feature-grid">
+
+            <div class="feature-box">
+                <img src="/images/image3.jpg">
+                <p>Healthy</p>
+            </div>
+
+            <div class="feature-box">
+                <img src="/images/m4.jpg">
+                <p>Veg Mode</p>
+            </div>
+
+            <div class="feature-box">
+                <img src="/images/m5.jpg">
+                <p>Schedule Meals</p>
+            </div>
+
+            <div class="feature-box">
+                <img src="/images/m5.jpg">
+                <p>Offers</p>
+            </div>
+
+            <div class="feature-box">
+                <img src="/images/m1.jpg">
+                <p>Collections</p>
+            </div>
+
+        </div>
+
+        <!-- ORDER & CONTACT -->
+        <div class="action-buttons mt-5">
+
+            <a href="/shop" class="btn order-btn">
+                🍽️ Order Food
+            </a>
+
+            <a href="tel:7793924435" class="btn contact-btn1">
+                📞 Contact Us
+            </a>
+
+            <a href="https://wa.me/7793924435"
+               target="_blank"
+               class="btn whatsapp-btn1">
+                💬 WhatsApp
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+<!-- ================= CUSTOMER SATISFACTION BLOCK ================= -->
+<style>
+.satisfaction-section {
+    background: #fff5f5;
+    padding: 80px 0;
+    position: relative;
+    border-top-left-radius: 120px;
+    border-top-right-radius: 120px;
+}
+
+.satisfaction-title {
+    font-size: 38px;
+    font-weight: 700;
+    color: #e74c3c;
+}
+
+.satisfaction-subtitle {
+    font-size: 18px;
+    color: #555;
+    max-width: 700px;
+    margin: 15px auto 40px;
+}
+
+.feature-card {
+    background: white;
+    border-radius: 18px;
+    padding: 30px 20px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    transition: transform 0.3s;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+}
+
+.feature-icon {
+    font-size: 40px;
+    color: #e74c3c;
+    margin-bottom: 15px;
+}
+
+.review-box {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.07);
+}
+
+.stars {
+    color: #f1c40f;
+    font-size: 20px;
+}
+
+.order-btn {
+    background: #e74c3c;
+    color: white;
+    padding: 14px 40px;
+    font-size: 18px;
+    border-radius: 50px;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 30px;
+}
+
+.order-btn:hover {
+    background: #c0392b;
+    color: white;
+}
+</style>
+
+<section class="satisfaction-section text-center">
+    <div class="container">
+
+        <h2 class="satisfaction-title">
+            Make Your Food Healthy
+        </h2>
+
+        <p class="satisfaction-subtitle">
+            Fresh • Hygienic • Home-Made with Love ❤️  
+            <br>
+            Cooked daily in our Spark Cloud Kitchen
+        </p>
+
+        <!-- FEATURES -->
+        <div class="row justify-content-center">
+
+            <div class="col-md-3 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">🍲</div>
+                    <h5>100% Home-Made</h5>
+                    <p>No factory food. No shortcuts.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">🥗</div>
+                    <h5>Healthy Ingredients</h5>
+                    <p>No preservatives. Less oil.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">⏱️</div>
+                    <h5>Cooked Fresh Daily</h5>
+                    <p>Prepared only after order.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">🚚</div>
+                    <h5>Fast Delivery</h5>
+                    <p>Hot & on-time delivery.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- REVIEW -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-6">
+                <div class="review-box">
+                    <div class="stars">★★★★★</div>
+                    <p class="mt-2">
+                        “Best home-made food I’ve had.  
+                        Very tasty, clean and healthy.”
+                    </p>
+                    <strong>– Ramesh, Hyderabad</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <a href="/shop" class="order-btn">
+            🍽️ Order Healthy Food Now
+        </a>
+
+    </div>
+</section>
+<!-- ================= END BLOCK ================= -->
+<!-- ================= SOCIAL MEDIA CONNECT BLOCK ================= -->
+<style>
+.social-section {
+    background: #ffffff;
+    padding: 70px 0;
+    text-align: center;
+}
+
+.social-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: #e74c3c;
+}
+
+.social-subtitle {
+    font-size: 18px;
+    color: #555;
+    margin: 15px 0 40px;
+}
+
+.social-icons a {
+    width: 65px;
+    height: 65px;
+    line-height: 65px;
+    font-size: 28px;
+    color: white;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 12px;
+    transition: transform 0.3s;
+}
+
+.social-icons a:hover {
+    transform: scale(1.15);
+}
+
+/* Brand colors */
+.instagram {
+    background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af);
+}
+
+.facebook {
+    background: #1877f2;
+}
+
+.whatsapp {
+    background: #25d366;
+}
+</style>
+
+<section class="social-section">
+    <div class="container">
+
+        <h2 class="social-title">
+            Stay Connected With Us
+        </h2>
+
+        <p class="social-subtitle">
+            Follow us for daily menu updates, offers & healthy home-made food ❤️
+        </p>
+
+        <div class="social-icons">
+
+            <!-- Instagram -->
+            <a href="https://www.instagram.com/spark_1219/"
+               target="_blank"
+               class="instagram"
+               title="Instagram">
+                <i class="fab fa-instagram"></i>
+            </a>
+
+            <!-- Facebook -->
+            <a href="https://www.facebook.com/"
+               target="_blank"
+               class="facebook"
+               title="Facebook">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+
+            <!-- WhatsApp -->
+            <a href="https://wa.me/917793924435"
+               target="_blank"
+               class="whatsapp"
+               title="Order on WhatsApp">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+
+        </div>
+
+        <p class="mt-4 text-muted">
+            📞 Order • 📸 Follow • ❤️ Trust
+        </p>
+
+    </div>
+</section>
+<!-- ================= SPARK CLOUD AUTO POPUP ================= -->
+<div class="spark-popup" id="sparkPopup">
+    <div class="spark-popup-inner">
+
+        <h4>🔥 Spark Cloud Kitchen</h4>
+
+        <div class="spark-scroll">
+            <div class="spark-scroll-content">
+                <p>🏡 100% Home-Made Food</p>
+                <p>🍛 Andhra Style Meals</p>
+                <p>🍗 Authentic Chicken Biryani</p>
+                <p>🥗 Healthy Veg Curries</p>
+                <p>🧼 Hygienic Kitchen</p>
+                <p>🔥 Cooked Fresh Daily</p>
+                <p>🚚 Fast & Hot Delivery</p>
+                <p>❤️ Made With Love</p>
+
+                <!-- duplicate for smooth loop -->
+                <p>🏡 100% Home-Made Food</p>
+                <p>🍛 Andhra Style Meals</p>
+                <p>🍗 Authentic Chicken Biryani</p>
+                <p>🥗 Healthy Veg Curries</p>
+                <p>🧼 Hygienic Kitchen</p>
+                <p>🔥 Cooked Fresh Daily</p>
+                <p>🚚 Fast & Hot Delivery</p>
+                <p>❤️ Made With Love</p>
+            </div>
+        </div>
+
+        <button onclick="closeSparkPopup()">Got it 👍</button>
+    </div>
+</div>
+<style>
+.spark-popup {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 320px;
+    background: linear-gradient(135deg, #ff9800, #ff5722);
+    color: white;
+    border-radius: 22px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.45);
+    z-index: 9999;
+    display: none;
+    animation: popupIn 0.8s ease;
+}
+
+@keyframes popupIn {
+    from {
+        opacity: 0;
+        transform: translateY(80px) scale(0.85);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.spark-popup-inner {
+    padding: 20px;
+    text-align: center;
+}
+
+.spark-popup-inner h4 {
+    font-weight: 800;
+    margin-bottom: 12px;
+    animation: glowText 1.5s infinite alternate;
+}
+
+@keyframes glowText {
+    from { text-shadow: 0 0 6px rgba(255,255,255,0.6); }
+    to   { text-shadow: 0 0 18px rgba(255,255,255,1); }
+}
+
+.spark-scroll {
+    height: 140px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 10px;
+    margin-bottom: 14px;
+}
+
+.spark-scroll-content {
+    animation: scrollUp 14s linear infinite;
+}
+
+@keyframes scrollUp {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
+}
+
+.spark-scroll-content p {
+    margin: 6px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.spark-popup-inner button {
+    background: white;
+    color: #ff5722;
+    border: none;
+    width: 100%;
+    padding: 10px;
+    border-radius: 30px;
+    font-weight: 700;
+    transition: 0.3s;
+}
+
+.spark-popup-inner button:hover {
+    background: #ffe0d6;
+    transform: scale(1.05);
+}
+</style>
+<script>
+function showSparkPopup() {
+    document.getElementById("sparkPopup").style.display = "block";
+}
+
+function closeSparkPopup() {
+    document.getElementById("sparkPopup").style.display = "none";
+}
+
+/* First appearance after page load */
+setTimeout(showSparkPopup, 3000);
+
+/* Re-appear every 2 minutes */
+setInterval(showSparkPopup, 120000);
+</script>
+<!-- ================= END SOCIAL MEDIA BLOCK ================= -->
+
+<!-- ================= JS ================= -->
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<script>
+/* ================= CLICK IMAGE / VIDEO → SHOP ================= */
+document.addEventListener("DOMContentLoaded", function () {
+
+    // All images
+    document.querySelectorAll("img").forEach(function (img) {
+        img.style.cursor = "pointer";
+        img.addEventListener("click", function () {
+            window.location.href = "/shop";
+        });
+    });
+
+    // All videos
+    document.querySelectorAll("video").forEach(function (video) {
+        video.style.cursor = "pointer";
+        video.addEventListener("click", function () {
+            window.location.href = "/shop";
+        });
+    });
+
+});
+</script>
+<a href="/shop" class="floating-order-btn-top">
+    🍽️ Order Now
+</a>
+</body>
+</html>
