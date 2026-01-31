@@ -17,7 +17,7 @@ import com.project.repository.OrderRepository;
 public class AdminOrderController {
 
     private final OrderRepository orderRepository;
-    private final KafkaProducerService kafkaProducerService; // can be null
+    private final KafkaProducerService kafkaProducerService; // optional
 
     public AdminOrderController(
             OrderRepository orderRepository,
@@ -27,14 +27,15 @@ public class AdminOrderController {
         this.kafkaProducerService = kafkaProducerServiceProvider.getIfAvailable();
     }
 
-    // 📋 LIST ORDERS
+    // 📋 LIST ORDERS (ADMIN)
     @GetMapping
+    @Transactional(readOnly = true)
     public String list(Model model) {
-        model.addAttribute("orders", orderRepository.findAllOrdersForAdmin());
+        model.addAttribute("orders", orderRepository.findAll());
         return "admin";
     }
 
-    // 🔄 UPDATE STATUS
+    // 🔄 UPDATE ORDER STATUS
     @PostMapping("/{id}/status")
     @Transactional
     public String updateStatus(
@@ -47,30 +48,16 @@ public class AdminOrderController {
         order.setStatus(status);
         orderRepository.save(order);
 
+        // Kafka optional (won’t crash if disabled)
         if (kafkaProducerService != null) {
-            OrderEvent event = new OrderEvent(
+            kafkaProducerService.sendOrderEvent(
+                new OrderEvent(
                     order.getId(),
                     status.name(),
                     order.getUser().getPhone()
+                )
             );
-            kafkaProducerService.sendOrderEvent(event);
         }
-
-        return "redirect:/admin/orders";
-    }
-
-    // 🗑 DELETE ORDER
-    @PostMapping("/delete/{id}")
-    @Transactional
-    public String deleteOrder(@PathVariable Long id) {
-
-        Order order = orderRepository.findById(id).orElse(null);
-        if (order == null) {
-            return "redirect:/admin/orders";
-        }
-
-        order.setAddress(null);
-        orderRepository.delete(order);
 
         return "redirect:/admin/orders";
     }

@@ -18,11 +18,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 		    SELECT DISTINCT o FROM Order o
 		    LEFT JOIN FETCH o.items i
 		    LEFT JOIN FETCH i.product
-		    LEFT JOIN FETCH o.user
-		    LEFT JOIN FETCH o.address
-		    ORDER BY o.createdAt DESC
+		    WHERE o.id = :orderId
 		""")
-		List<Order> findAllOrdersForAdmin();
+		Optional<Order> findOrderWithItems(Long orderId);
 	
     // ✅ User latest order
     Optional<Order> findFirstByUserOrderByCreatedAtDesc(User user);

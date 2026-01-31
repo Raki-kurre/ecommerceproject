@@ -80,13 +80,7 @@ public class AdminController {
     /* ================= ADMIN DASHBOARD ================= */
 
     @GetMapping("/admin")
-    public String adminDashboard(Model model) {
-
-        List<Order> orders = orderRepository.findAllOrdersForAdmin();
-
-        System.out.println("ADMIN ORDERS COUNT = " + orders.size());
-
-        model.addAttribute("orders", orders);
+    public String adminDashboard() {
         return "admin";
     }
     /* ============ UPDATE ORDER STATUS (ADMIN) ============ */
