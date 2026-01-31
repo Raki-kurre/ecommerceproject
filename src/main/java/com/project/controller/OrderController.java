@@ -17,15 +17,18 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    // ✅ Constructor Injection (BEST PRACTICE)
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
 
     // ================= TRACK LATEST ORDER =================
     @GetMapping("/track")
-    public String trackLatest(Model model, Principal principal) {
+    public String trackLatestOrder(Model model, Principal principal) {
 
-        if (principal == null) return "redirect:/login";
+        if (principal == null) {
+            return "redirect:/login";
+        }
 
         Order order = orderService.getLatestOrderForUser();
 
@@ -40,7 +43,7 @@ public class OrderController {
                 order.getCreatedAt().plusMinutes(30));
 
         if (order.getStatus() == OrderStatus.CANCELLED
-            || order.getStatus() == OrderStatus.REFUNDED) {
+                || order.getStatus() == OrderStatus.REFUNDED) {
 
             model.addAttribute(
                 "cancelledMessage",
@@ -51,13 +54,15 @@ public class OrderController {
         return "orderTracking";
     }
 
-    // ================= TRACK BY ORDER ID (🔥 REQUIRED) =================
+    // ================= TRACK ORDER BY ID =================
     @GetMapping("/track/{id}")
-    public String trackById(@PathVariable Long id,
-                            Model model,
-                            Principal principal) {
+    public String trackOrderById(@PathVariable Long id,
+                                 Model model,
+                                 Principal principal) {
 
-        if (principal == null) return "redirect:/login";
+        if (principal == null) {
+            return "redirect:/login";
+        }
 
         Order order = orderService.getOrderById(id);
 
@@ -72,7 +77,7 @@ public class OrderController {
                 order.getCreatedAt().plusMinutes(30));
 
         if (order.getStatus() == OrderStatus.CANCELLED
-            || order.getStatus() == OrderStatus.REFUNDED) {
+                || order.getStatus() == OrderStatus.REFUNDED) {
 
             model.addAttribute(
                 "cancelledMessage",
@@ -86,15 +91,30 @@ public class OrderController {
     // ================= CANCEL ORDER =================
     @PostMapping("/cancel/{id}")
     public String cancelOrder(@PathVariable Long id,
+                              Principal principal,
                               RedirectAttributes redirectAttributes) {
 
-        orderService.cancelOrder(id);
+        if (principal == null) {
+            return "redirect:/login";
+        }
 
-        redirectAttributes.addFlashAttribute(
-            "cancelledMessage",
-            "❌ Your order has been cancelled successfully."
-        );
+        try {
+            // ✅ Matches your OrderService exactly
+            orderService.cancelOrder(id);
 
-        return "redirect:/orders/track/" + id; // ✅ NOW WORKS
+            redirectAttributes.addFlashAttribute(
+                "cancelledMessage",
+                "❌ Your order has been cancelled successfully."
+            );
+
+        } catch (RuntimeException ex) {
+
+            redirectAttributes.addFlashAttribute(
+                "errorMessage",
+                ex.getMessage()
+            );
+        }
+
+        return "redirect:/orders/track/" + id;
     }
 }
