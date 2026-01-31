@@ -1,7 +1,5 @@
 package com.project.controller;
 
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +28,9 @@ public class AdminInitializer implements CommandLineRunner {
             admin.setEmail(adminEmail);
             admin.setPassword(passwordEncoder.encode("123456"));
             admin.setRole("ROLE_ADMIN");
+
+            // ✅ REQUIRED FIELD (FIX)
+            admin.setPhone("7793924435");
 
             userRepository.save(admin);
 

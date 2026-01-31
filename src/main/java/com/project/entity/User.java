@@ -1,7 +1,6 @@
 package com.project.entity;
 
 import java.util.List;
-
 import jakarta.persistence.*;
 
 @Entity
@@ -16,19 +15,19 @@ public class User {
 
     @Column(unique = true, nullable = false)
     private String email;
-    private String role;
-    public String getRole() {
-		return role;
-	}
-	public void setRole(String role) {
-		this.role = role;
-	}
-	private String password;
 
-	@Column(nullable = false, unique = true)
-	private String phone;     // ✅ ADD
-    private String location; 
-   // ✅ ADD
+    @Column(nullable = false)
+    private String role;
+
+    @Column(nullable = false)
+    private String password;
+
+    // ⚠️ Keep NOT NULL only if you ALWAYS set phone
+    @Column(nullable = false, unique = true)
+    private String phone;
+
+    private String location;
+
     @Column(name = "profile_image")
     private String profileImage;
 
@@ -49,6 +48,9 @@ public class User {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
