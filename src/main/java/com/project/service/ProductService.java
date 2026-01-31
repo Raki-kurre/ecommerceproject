@@ -22,7 +22,7 @@ public class ProductService {
     @Autowired
     private CartItemRepository cartItemRepo;
 
-    @Autowired
+    @Autowired(required = false)
     private KafkaProducerService kafkaProducerService;
 
     // ✅ SAVE PRODUCT
@@ -41,7 +41,9 @@ public class ProductService {
                 "PRODUCT_CREATED"
         );
 
-        kafkaProducerService.sendProductEvent(event);
+        if (kafkaProducerService != null) {
+            kafkaProducerService.sendProductEvent(event);
+        }
     }
 
     // ✅ GET ALL PRODUCTS

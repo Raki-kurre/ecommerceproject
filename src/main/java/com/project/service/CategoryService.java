@@ -21,7 +21,7 @@ public class CategoryService {
     @Autowired
     private ProductRepository prepo;
 
-    @Autowired
+    @Autowired(required = false)
     private KafkaProducerService kafkaProducerService;
 
     // ✅ SAVE CATEGORY
@@ -46,8 +46,11 @@ public class CategoryService {
                 c.getName(),
                 "CATEGORY_CREATED"
         );
+        if (kafkaProducerService != null) {
+            kafkaProducerService.sendCategoryEvent(event);
+        }
 
-        kafkaProducerService.sendCategoryEvent(event);
+       
     }
 
     // ✅ GET ALL

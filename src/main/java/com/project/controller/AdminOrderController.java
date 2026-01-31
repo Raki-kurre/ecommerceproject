@@ -1,5 +1,6 @@
 package com.project.controller;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -16,12 +17,14 @@ import com.project.repository.OrderRepository;
 public class AdminOrderController {
 
     private final OrderRepository orderRepository;
-    private final KafkaProducerService kafkaProducerService;
+    private final KafkaProducerService kafkaProducerService; // can be null
 
-    public AdminOrderController(OrderRepository orderRepository,
-                                KafkaProducerService kafkaProducerService) {
+    public AdminOrderController(
+            OrderRepository orderRepository,
+            ObjectProvider<KafkaProducerService> kafkaProducerServiceProvider) {
+
         this.orderRepository = orderRepository;
-        this.kafkaProducerService = kafkaProducerService;
+        this.kafkaProducerService = kafkaProducerServiceProvider.getIfAvailable();
     }
 
     // 📋 LIST ORDERS
@@ -31,9 +34,9 @@ public class AdminOrderController {
         return "admin";
     }
 
-    // 🔄 UPDATE STATUS ✅ FIXED
+    // 🔄 UPDATE STATUS
     @PostMapping("/{id}/status")
-    @Transactional   // ⭐⭐⭐ THIS LINE FIXES EVERYTHING
+    @Transactional
     public String updateStatus(
             @PathVariable Long id,
             @RequestParam OrderStatus status) {
@@ -44,16 +47,14 @@ public class AdminOrderController {
         order.setStatus(status);
         orderRepository.save(order);
 
-        // ✅ SAFE NOW
-        String phone = order.getUser().getPhone();
-
-        OrderEvent event = new OrderEvent(
-                order.getId(),
-                status.name(),
-                phone
-        );
-
-        kafkaProducerService.sendOrderEvent(event);
+        if (kafkaProducerService != null) {
+            OrderEvent event = new OrderEvent(
+                    order.getId(),
+                    status.name(),
+                    order.getUser().getPhone()
+            );
+            kafkaProducerService.sendOrderEvent(event);
+        }
 
         return "redirect:/admin/orders";
     }
