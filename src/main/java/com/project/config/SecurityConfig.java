@@ -7,64 +7,56 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-
 @Configuration
 public class SecurityConfig {
 
-	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-	    http
-	        .csrf(csrf -> csrf.disable())
-	        .authorizeHttpRequests(auth -> auth
+        http
+            .csrf(csrf -> csrf.disable())
 
-	            /* PUBLIC */
-	            .requestMatchers(
-	                "/",
-	                "/login",
-	                "/register",
-	                "/shop/**",
-	                "/css/**",
-	                "/js/**",
-	                "/images/**",
-	                "/videos/**",
-	                "/productImages/**",
-	                "/profile-images/**"
-	            ).permitAll()
+            .authorizeHttpRequests(auth -> auth
+                // PUBLIC
+                .requestMatchers(
+                    "/",
+                    "/login",
+                    "/register",
+                    "/shop/**",
+                    "/css/**",
+                    "/js/**",
+                    "/images/**",
+                    "/productImages/**",
+                    "/uploads/**"
+                ).permitAll()
 
-	            /* ADMIN ONLY */
-	            .requestMatchers("/admin/**")
-	            .hasRole("ADMIN")
+                // ADMIN ONLY
+                .requestMatchers("/admin/**").hasRole("ADMIN")
 
-	            /* AUTHENTICATED USER */
-	            .requestMatchers(
-	                "/profile/**",
-	                "/cart/**",
-	                "/checkout/**"
-	            ).authenticated()
+                // AUTHENTICATED USERS
+                .anyRequest().authenticated()
+            )
 
-	            .anyRequest().authenticated()
-	        )
+            .formLogin(form -> form
+                .loginPage("/login")
+                .usernameParameter("email")
+                .passwordParameter("password")
+                // ✅ IMPORTANT FIX
+                .defaultSuccessUrl("/admin/products", true)
+                .permitAll()
+            )
 
-	        .formLogin(form -> form
-	            .loginPage("/login")
-	            .usernameParameter("email")
-	            .passwordParameter("password")
-	            .defaultSuccessUrl("/", true)
-	            .permitAll()
-	        )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout=true")
+                .permitAll()
+            );
 
-	        /* 🔴 CUSTOM ACCESS DENIED HANDLER */
-	        .exceptionHandling(ex -> ex
-	            .accessDeniedPage("/access-denied")
-	        )
+        return http.build();
+    }
 
-	        .logout(logout -> logout
-	            .logoutUrl("/logout")
-	            .logoutSuccessUrl("/login?logout=true")
-	            .permitAll()
-	        );
-
-	    return http.build();
-	}
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }

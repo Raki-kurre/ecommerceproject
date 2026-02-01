@@ -18,41 +18,39 @@ import com.project.service.CategoryService;
 import com.project.service.ProductService;
 
 @Controller
+@RequestMapping("/admin")
 public class AdminController {
 
     @Autowired
-    private CategoryService cservice;
+    private CategoryService categoryService;
 
     @Autowired
-    private ProductService pservice;
+    private ProductService productService;
 
-    // ✅ Railway-safe upload directory (DO NOT use static/)
-    public static final String UPLOAD_DIR =
+    // ✅ Railway-safe upload directory
+    private static final String UPLOAD_DIR =
             System.getProperty("user.dir") + "/uploads/product-images";
 
-    /* ================= ADMIN ROOT ================= */
+    /* ================= PRODUCTS LIST ================= */
 
-    @GetMapping("/admin")
-    public String adminHome() {
-        return "redirect:/admin/products";
-    }
-
-    /* ================= PRODUCTS ================= */
-
-    @GetMapping("/admin/products")
+    @GetMapping("/products")
     public String products(Model model) {
-        model.addAttribute("products", pservice.getAll());
+        model.addAttribute("products", productService.getAll());
         return "products";
     }
 
-    @GetMapping("/admin/products/add")
-    public String addProduct(Model model) {
+    /* ================= ADD PRODUCT PAGE ================= */
+
+    @GetMapping("/products/add")
+    public String addProductPage(Model model) {
         model.addAttribute("productDTO", new ProductDt());
-        model.addAttribute("categories", cservice.getAll());
+        model.addAttribute("categories", categoryService.getAll());
         return "productsAdd";
     }
 
-    @PostMapping("/admin/products/add")
+    /* ================= SAVE PRODUCT ================= */
+
+    @PostMapping("/products/add")
     public String saveProduct(
             @ModelAttribute("productDTO") ProductDt dto,
             @RequestParam("productImage") MultipartFile file,
@@ -66,11 +64,11 @@ public class AdminController {
         product.setWeight(dto.getWeight());
         product.setDescription(dto.getDescription());
 
-        Category category = cservice.fetchbyId(dto.getCategoryId())
+        Category category = categoryService.fetchbyId(dto.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         product.setCategory(category);
 
-        // ✅ Ensure directory exists
+        // ✅ ensure upload folder exists
         Files.createDirectories(Paths.get(UPLOAD_DIR));
 
         String imageName = imgName;
@@ -82,21 +80,25 @@ public class AdminController {
         }
 
         product.setImageName(imageName);
-        pservice.saveProduct(product);
+        productService.saveProduct(product);
 
         return "redirect:/admin/products";
     }
 
-    @GetMapping("/admin/product/delete/{id}")
+    /* ================= DELETE PRODUCT ================= */
+
+    @GetMapping("/product/delete/{id}")
     public String deleteProduct(@PathVariable long id) {
-        pservice.deletebyId(id);
+        productService.deletebyId(id);
         return "redirect:/admin/products";
     }
 
-    @GetMapping("/admin/product/update/{id}")
+    /* ================= UPDATE PRODUCT ================= */
+
+    @GetMapping("/product/update/{id}")
     public String updateProduct(@PathVariable long id, Model model) {
 
-        Product product = pservice.fetchbyId(id)
+        Product product = productService.fetchbyId(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
         ProductDt dto = new ProductDt();
@@ -109,7 +111,7 @@ public class AdminController {
         dto.setCategoryId(product.getCategory().getId());
 
         model.addAttribute("productDTO", dto);
-        model.addAttribute("categories", cservice.getAll());
+        model.addAttribute("categories", categoryService.getAll());
 
         return "productsAdd";
     }
