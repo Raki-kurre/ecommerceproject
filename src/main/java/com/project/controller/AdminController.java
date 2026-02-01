@@ -4,28 +4,21 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.project.dto.ProductDt;
 import com.project.entity.Category;
-import com.project.entity.Order;
 import com.project.entity.Product;
 import com.project.entity.User;
-import com.project.enums.OrderStatus;
-import com.project.repository.OrderRepository;
 import com.project.repository.UserRepository;
 import com.project.service.CategoryService;
 import com.project.service.ProductService;
@@ -41,9 +34,6 @@ public class AdminController {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private OrderRepository orderRepository; // ✅ IMPORTANT
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -65,37 +55,24 @@ public class AdminController {
 
     @PostMapping("/register")
     public String registerUser(@RequestParam String email,
-    		 @RequestParam String phone,
+                               @RequestParam String phone,
                                @RequestParam String password) {
 
         User user = new User();
         user.setEmail(email);
-        user.setPhone(phone);  
+        user.setPhone(phone);
         user.setPassword(passwordEncoder.encode(password));
         userRepository.save(user);
 
         return "redirect:/login";
     }
 
-    /* ================= ADMIN DASHBOARD ================= */
+    /* ================= ADMIN ROOT ================= */
 
     @GetMapping("/admin")
-    public String adminDashboard() {
-        return "admin";
+    public String adminRoot() {
+        return "redirect:/admin/orders";
     }
-    /* ============ UPDATE ORDER STATUS (ADMIN) ============ */
-
-//    @PostMapping("/admin/orders/{id}/status")
-//    public String updateOrderStatus(
-//            @PathVariable Long id,
-//            @RequestParam OrderStatus status) {
-//
-//        Order order = orderRepository.findById(id).orElseThrow();
-//        order.setStatus(status);
-//        orderRepository.save(order);
-//
-//        return "redirect:/admin";
-//    }
 
     /* ================= CATEGORIES ================= */
 
@@ -112,7 +89,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/categories/add")
-    public String saveCategory(@ModelAttribute("category") Category c) {
+    public String saveCategory(@ModelAttribute Category c) {
         cservice.saveCategory(c);
         return "redirect:/admin/categories";
     }
@@ -123,8 +100,8 @@ public class AdminController {
 
         cservice.deleteById(id);
         redirectAttributes.addFlashAttribute(
-            "success",
-            "Category and all related products deleted successfully"
+                "success",
+                "Category and all related products deleted successfully"
         );
         return "redirect:/admin/categories";
     }
@@ -165,13 +142,10 @@ public class AdminController {
         pro.setDescription(p.getDescription());
         pro.setCategory(cservice.fetchbyId(p.getCategoryId()).get());
 
-        String imageUUID;
+        String imageUUID = file.isEmpty() ? imgName : file.getOriginalFilename();
         if (!file.isEmpty()) {
-            imageUUID = file.getOriginalFilename();
             Path path = Paths.get(uploadDir, imageUUID);
             Files.write(path, file.getBytes());
-        } else {
-            imageUUID = imgName;
         }
 
         pro.setImageName(imageUUID);

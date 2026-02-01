@@ -14,13 +14,17 @@ import com.project.enums.OrderStatus;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-	@Query("""
-		    SELECT DISTINCT o FROM Order o
-		    LEFT JOIN FETCH o.items i
-		    LEFT JOIN FETCH i.product
-		    WHERE o.id = :orderId
-		""")
-		Optional<Order> findOrderWithItems(Long orderId);
+	 @Query("""
+		        SELECT DISTINCT o
+		        FROM Order o
+		        JOIN FETCH o.user
+		        LEFT JOIN FETCH o.items i
+		        LEFT JOIN FETCH i.product
+		        LEFT JOIN FETCH o.address
+		        ORDER BY o.createdAt DESC
+		    """)
+		List<Order> findAllForAdminView();
+//		Optional<Order> findOrderWithItems(Long orderId);
 	
     // ✅ User latest order
     Optional<Order> findFirstByUserOrderByCreatedAtDesc(User user);
