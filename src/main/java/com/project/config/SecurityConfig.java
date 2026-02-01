@@ -18,32 +18,29 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(auth -> auth
-                /* PUBLIC */
+                // PUBLIC PAGES
                 .requestMatchers(
                     "/",
                     "/login",
                     "/register",
-                    "/shop/**",
                     "/css/**",
                     "/js/**",
                     "/images/**",
-                    "/videos/**",
                     "/productImages/**",
-                    "/profile-images/**",
                     "/uploads/**"
                 ).permitAll()
 
-                /* ADMIN ONLY */
+                // ADMIN
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                /* USER ONLY */
+                // USER
                 .requestMatchers(
                     "/profile/**",
                     "/cart/**",
                     "/checkout/**"
                 ).authenticated()
 
-                /* EVERYTHING ELSE */
+                // EVERYTHING ELSE
                 .anyRequest().permitAll()
             )
 
@@ -57,7 +54,6 @@ public class SecurityConfig {
             )
 
             .logout(logout -> logout
-                .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout=true")
                 .permitAll()
             );
