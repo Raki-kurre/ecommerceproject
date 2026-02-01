@@ -14,6 +14,7 @@ import com.project.repository.CartItemRepository;
 import com.project.repository.ProductRepository;
 
 @Service
+@Transactional
 public class ProductService {
 
     @Autowired

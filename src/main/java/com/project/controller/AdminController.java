@@ -124,13 +124,6 @@ public class AdminController {
         return "products";
     }
 
-    @GetMapping("/admin/products/add")
-    public String addProduct(Model model) {
-        model.addAttribute("productDTO", new ProductDt());
-        model.addAttribute("categories", cservice.getAll());
-        return "productsAdd";
-    }
-
     @PostMapping("/admin/products/add")
     public String saveProduct(
             @ModelAttribute("productDTO") ProductDt p,
@@ -139,19 +132,22 @@ public class AdminController {
     ) throws IOException {
 
         Product pro = new Product();
-        pro.setId(p.getId());
         pro.setName(p.getName());
         pro.setPrice(p.getPrice());
         pro.setWeight(p.getWeight());
         pro.setDescription(p.getDescription());
-        pro.setCategory(cservice.fetchbyId(p.getCategoryId()).get());
+        pro.setCategory(cservice.fetchbyId(p.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found")));
 
-        String imageName;
+        // ✅ CREATE DIRECTORY
+        String uploadDir = "/tmp/product-images/";
+        Files.createDirectories(Paths.get(uploadDir));
 
+        String imageName = imgName;
         if (!file.isEmpty()) {
-            imageName = productImageStorageService.save(file);
-        } else {
-            imageName = imgName;
+            imageName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path path = Paths.get(uploadDir + imageName);
+            Files.write(path, file.getBytes());
         }
 
         pro.setImageName(imageName);
