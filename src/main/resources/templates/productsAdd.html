@@ -82,7 +82,6 @@ img { border-radius: 10px; }
         <div class="form-group">
     <label>Select Category</label>
 
-    <!-- CATEGORY DROPDOWN (ONLY IF CATEGORIES EXIST) -->
     <select class="form-control"
             th:field="*{categoryId}"
             th:if="${categories != null and !#lists.isEmpty(categories)}">
@@ -93,7 +92,6 @@ img { border-radius: 10px; }
         </option>
     </select>
 
-    <!-- WARNING IF NO CATEGORIES -->
     <p th:if="${categories == null or #lists.isEmpty(categories)}"
        class="text-warning mt-2">
         ⚠️ Please add a category first
@@ -130,14 +128,8 @@ img { border-radius: 10px; }
                    accept="image/png, image/jpeg">
 
             <!-- ✅ PREVIEW -->
-            <img id="imgPreview"
-     th:if="${productDTO.imageName != null}"
-     th:src="@{/product-images/{img}(img=${productDTO.imageName})}"
-     height="100" width="100"
-     class="mt-3">
-     <img id="imgPreview"
-     th:if="${productDTO.imageName == null}"
-     src="/images/placeholder.png"
+            <img th:if="${productDTO.imageName != null}"
+     th:src="@{/productImages/{img}(img=${productDTO.imageName})}"
      height="100" width="100"
      class="mt-3">
 

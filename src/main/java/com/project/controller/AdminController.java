@@ -68,7 +68,6 @@ public class AdminController {
         model.addAttribute("categories", cservice.getAll());
         return "productsAdd";
     }
-
     @PostMapping("/admin/products/add")
     public String saveProduct(
             @ModelAttribute("productDTO") ProductDt p,
