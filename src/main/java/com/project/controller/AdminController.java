@@ -21,6 +21,7 @@ import com.project.entity.Product;
 import com.project.entity.User;
 import com.project.repository.UserRepository;
 import com.project.service.CategoryService;
+import com.project.service.ProductImageStorageService;
 import com.project.service.ProductService;
 
 @Controller
@@ -34,6 +35,8 @@ public class AdminController {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ProductImageStorageService productImageStorageService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -129,10 +132,11 @@ public class AdminController {
     }
 
     @PostMapping("/admin/products/add")
-    public String saveProduct(@ModelAttribute("productDTO") ProductDt p,
-                              @RequestParam("productImage") MultipartFile file,
-                              @RequestParam("imgName") String imgName)
-            throws IOException {
+    public String saveProduct(
+            @ModelAttribute("productDTO") ProductDt p,
+            @RequestParam("productImage") MultipartFile file,
+            @RequestParam("imgName") String imgName
+    ) throws IOException {
 
         Product pro = new Product();
         pro.setId(p.getId());
@@ -142,13 +146,15 @@ public class AdminController {
         pro.setDescription(p.getDescription());
         pro.setCategory(cservice.fetchbyId(p.getCategoryId()).get());
 
-        String imageUUID = file.isEmpty() ? imgName : file.getOriginalFilename();
+        String imageName;
+
         if (!file.isEmpty()) {
-            Path path = Paths.get(uploadDir, imageUUID);
-            Files.write(path, file.getBytes());
+            imageName = productImageStorageService.save(file);
+        } else {
+            imageName = imgName;
         }
 
-        pro.setImageName(imageUUID);
+        pro.setImageName(imageName);
         pservice.saveProduct(pro);
 
         return "redirect:/admin/products";

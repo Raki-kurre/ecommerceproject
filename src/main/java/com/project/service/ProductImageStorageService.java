@@ -7,12 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-public class FileStorageService {
+public class ProductImageStorageService {
 
-    // ✅ Railway-safe directory
-    private static final String UPLOAD_DIR = "/tmp/profile-images";
+    private static final String UPLOAD_DIR = "/tmp/product-images";
 
-    public String saveProfileImage(MultipartFile file) throws IOException {
+    public String save(MultipartFile file) throws IOException {
 
         if (file == null || file.isEmpty()) {
             return null;
@@ -20,16 +19,15 @@ public class FileStorageService {
 
         File dir = new File(UPLOAD_DIR);
         if (!dir.exists()) {
-            dir.mkdirs(); // ✅ create directory safely
+            dir.mkdirs();
         }
 
         String fileName =
                 System.currentTimeMillis() + "_" + file.getOriginalFilename();
 
         File dest = new File(dir, fileName);
-
         file.transferTo(dest);
 
-        return fileName; // store this in DB
+        return fileName;
     }
 }
