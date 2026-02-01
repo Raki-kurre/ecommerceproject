@@ -11,9 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.project.dto.ProductDt;
 import com.project.entity.Category;
@@ -21,7 +19,6 @@ import com.project.entity.Product;
 import com.project.entity.User;
 import com.project.repository.UserRepository;
 import com.project.service.CategoryService;
-import com.project.service.ProductImageStorageService;
 import com.project.service.ProductService;
 
 @Controller
@@ -35,123 +32,74 @@ public class AdminController {
 
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private ProductImageStorageService productImageStorageService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public static String uploadDir =
-            System.getProperty("user.dir") + "/src/main/resources/static/productImages";
+    // ✅ IMPORTANT: Railway-safe upload path
+    public static final String uploadDir =
+            System.getProperty("user.dir") + "/uploads/product-images";
 
-    /* ================= LOGIN & REGISTER ================= */
+    /* ================= LOGIN ================= */
 
     @GetMapping("/login")
-    public String loginPage() {
+    public String login() {
         return "login";
-    }
-
-    @GetMapping("/register")
-    public String registerPage() {
-        return "register";
-    }
-
-    @PostMapping("/register")
-    public String registerUser(@RequestParam String email,
-                               @RequestParam String phone,
-                               @RequestParam String password) {
-
-        User user = new User();
-        user.setEmail(email);
-        user.setPhone(phone);
-        user.setPassword(passwordEncoder.encode(password));
-        userRepository.save(user);
-
-        return "redirect:/login";
     }
 
     /* ================= ADMIN ROOT ================= */
 
     @GetMapping("/admin")
-    public String adminRoot() {
-        return "redirect:/admin/orders";
-    }
-
-    /* ================= CATEGORIES ================= */
-
-    @GetMapping("/admin/categories")
-    public String categoryPage(Model model) {
-        model.addAttribute("categories", cservice.getAll());
-        return "categories";
-    }
-
-    @GetMapping("/admin/categories/add")
-    public String addCategory(Model model) {
-        model.addAttribute("category", new Category());
-        return "categoriesAdd";
-    }
-
-    @PostMapping("/admin/categories/add")
-    public String saveCategory(@ModelAttribute Category c) {
-        cservice.saveCategory(c);
-        return "redirect:/admin/categories";
-    }
-
-    @GetMapping("/admin/categories/delete/{id}")
-    public String deleteCategory(@PathVariable int id,
-                                 RedirectAttributes redirectAttributes) {
-
-        cservice.deleteById(id);
-        redirectAttributes.addFlashAttribute(
-                "success",
-                "Category and all related products deleted successfully"
-        );
-        return "redirect:/admin/categories";
-    }
-
-    @GetMapping("/admin/categories/update/{id}")
-    public String updateCategory(@PathVariable int id, Model model) {
-        Optional<Category> category = cservice.fetchbyId(id);
-        category.ifPresent(value -> model.addAttribute("category", value));
-        return "categoriesAdd";
+    public String adminHome() {
+        return "redirect:/admin/products";
     }
 
     /* ================= PRODUCTS ================= */
 
     @GetMapping("/admin/products")
-    public String productPage(Model model) {
+    public String products(Model model) {
         model.addAttribute("products", pservice.getAll());
         return "products";
+    }
+
+    @GetMapping("/admin/products/add")
+    public String addProduct(Model model) {
+        model.addAttribute("productDTO", new ProductDt());
+        model.addAttribute("categories", cservice.getAll());
+        return "productsAdd";
     }
 
     @PostMapping("/admin/products/add")
     public String saveProduct(
             @ModelAttribute("productDTO") ProductDt p,
             @RequestParam("productImage") MultipartFile file,
-            @RequestParam("imgName") String imgName
-    ) throws IOException {
+            @RequestParam("imgName") String imgName) throws IOException {
 
-        Product pro = new Product();
-        pro.setName(p.getName());
-        pro.setPrice(p.getPrice());
-        pro.setWeight(p.getWeight());
-        pro.setDescription(p.getDescription());
-        pro.setCategory(cservice.fetchbyId(p.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found")));
+        Product product = new Product();
+        product.setId(p.getId());
+        product.setName(p.getName());
+        product.setPrice(p.getPrice());
+        product.setWeight(p.getWeight());
+        product.setDescription(p.getDescription());
 
-        // ✅ CREATE DIRECTORY
-        String uploadDir = "/tmp/product-images/";
+        Category category = cservice.fetchbyId(p.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        product.setCategory(category);
+
+        // ✅ Create directory if not exists
         Files.createDirectories(Paths.get(uploadDir));
 
-        String imageName = imgName;
+        String imageName;
         if (!file.isEmpty()) {
             imageName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path path = Paths.get(uploadDir + imageName);
-            Files.write(path, file.getBytes());
+            Path imagePath = Paths.get(uploadDir, imageName);
+            Files.write(imagePath, file.getBytes());
+        } else {
+            imageName = imgName;
         }
 
-        pro.setImageName(imageName);
-        pservice.saveProduct(pro);
+        product.setImageName(imageName);
+        pservice.saveProduct(product);
 
         return "redirect:/admin/products";
     }
@@ -165,18 +113,19 @@ public class AdminController {
     @GetMapping("/admin/product/update/{id}")
     public String updateProduct(@PathVariable long id, Model model) {
 
-        Product pro = pservice.fetchbyId(id).get();
+        Product product = pservice.fetchbyId(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        ProductDt pdt = new ProductDt();
-        pdt.setId(pro.getId());
-        pdt.setName(pro.getName());
-        pdt.setPrice(pro.getPrice());
-        pdt.setWeight(pro.getWeight());
-        pdt.setDescription(pro.getDescription());
-        pdt.setImageName(pro.getImageName());
-        pdt.setCategoryId(pro.getCategory().getId());
+        ProductDt dto = new ProductDt();
+        dto.setId(product.getId());
+        dto.setName(product.getName());
+        dto.setPrice(product.getPrice());
+        dto.setWeight(product.getWeight());
+        dto.setDescription(product.getDescription());
+        dto.setImageName(product.getImageName());
+        dto.setCategoryId(product.getCategory().getId());
 
-        model.addAttribute("productDTO", pdt);
+        model.addAttribute("productDTO", dto);
         model.addAttribute("categories", cservice.getAll());
 
         return "productsAdd";
