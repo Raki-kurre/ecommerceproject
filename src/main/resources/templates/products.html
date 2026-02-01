@@ -136,10 +136,9 @@
             <td th:text="${product.category.name}">Category</td>
 
             <td>
-                <img class="product-img"
-                     th:src="@{/productImages/{img}(img=${product.imageName})}"
-                     width="90" height="90"
-                     alt="Product Image">
+               <img th:src="@{/product-images/{img}(img=${product.imageName})}"
+     width="90" height="90"
+     alt="Product Image">
             </td>
 
             <td>

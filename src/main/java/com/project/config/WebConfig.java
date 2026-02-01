@@ -1,4 +1,4 @@
-package com.project.controller;
+package com.project.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -9,7 +9,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/profile-images/**")
-                .addResourceLocations("file:/Users/yourname/uploads/profile-images/");
+
+        registry.addResourceHandler("/product-images/**")
+                .addResourceLocations("file:/tmp/product-images/");
     }
 }
