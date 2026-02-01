@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.project.dto.ProductDt;
 import com.project.entity.Category;
 import com.project.entity.Product;
-import com.project.entity.User;
-import com.project.repository.UserRepository;
 import com.project.service.CategoryService;
 import com.project.service.ProductService;
 
@@ -30,22 +26,9 @@ public class AdminController {
     @Autowired
     private ProductService pservice;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    // ✅ IMPORTANT: Railway-safe upload path
-    public static final String uploadDir =
+    // ✅ Railway-safe upload directory (DO NOT use static/)
+    public static final String UPLOAD_DIR =
             System.getProperty("user.dir") + "/uploads/product-images";
-
-    /* ================= LOGIN ================= */
-
-    @GetMapping("/login")
-    public String login() {
-        return "login";
-    }
 
     /* ================= ADMIN ROOT ================= */
 
@@ -68,33 +51,34 @@ public class AdminController {
         model.addAttribute("categories", cservice.getAll());
         return "productsAdd";
     }
+
     @PostMapping("/admin/products/add")
     public String saveProduct(
-            @ModelAttribute("productDTO") ProductDt p,
+            @ModelAttribute("productDTO") ProductDt dto,
             @RequestParam("productImage") MultipartFile file,
-            @RequestParam("imgName") String imgName) throws IOException {
+            @RequestParam(value = "imgName", required = false) String imgName
+    ) throws IOException {
 
         Product product = new Product();
-        product.setId(p.getId());
-        product.setName(p.getName());
-        product.setPrice(p.getPrice());
-        product.setWeight(p.getWeight());
-        product.setDescription(p.getDescription());
+        product.setId(dto.getId());
+        product.setName(dto.getName());
+        product.setPrice(dto.getPrice());
+        product.setWeight(dto.getWeight());
+        product.setDescription(dto.getDescription());
 
-        Category category = cservice.fetchbyId(p.getCategoryId())
+        Category category = cservice.fetchbyId(dto.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         product.setCategory(category);
 
-        // ✅ Create directory if not exists
-        Files.createDirectories(Paths.get(uploadDir));
+        // ✅ Ensure directory exists
+        Files.createDirectories(Paths.get(UPLOAD_DIR));
 
-        String imageName;
-        if (!file.isEmpty()) {
+        String imageName = imgName;
+
+        if (file != null && !file.isEmpty()) {
             imageName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path imagePath = Paths.get(uploadDir, imageName);
+            Path imagePath = Paths.get(UPLOAD_DIR, imageName);
             Files.write(imagePath, file.getBytes());
-        } else {
-            imageName = imgName;
         }
 
         product.setImageName(imageName);
