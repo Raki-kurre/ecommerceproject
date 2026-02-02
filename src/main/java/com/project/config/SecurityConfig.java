@@ -27,7 +27,8 @@ public class SecurityConfig {
                     "/js/**",
                     "/images/**",
                     "/productImages/**",
-                    "/uploads/**"
+                    "/uploads/**",
+                    "/orders/**"
                 ).permitAll()
 
                 // ADMIN
