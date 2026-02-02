@@ -36,18 +36,18 @@ public class HomeController {
 
     @PostMapping("/register")
     public String registerUser(
-            @RequestParam String name,
             @RequestParam String email,
+            @RequestParam String phone,
             @RequestParam String password) {
 
-        // ✅ prevent duplicate email (VERY IMPORTANT)
+        // prevent duplicate email
         if (userRepository.findByEmail(email).isPresent()) {
             return "redirect:/register?error=email";
         }
 
         User user = new User();
-        user.setName(name);
         user.setEmail(email);
+        user.setPhone(phone);              // ✅ THIS WAS MISSING
         user.setPassword(passwordEncoder.encode(password));
         user.setRole("ROLE_USER");
 
