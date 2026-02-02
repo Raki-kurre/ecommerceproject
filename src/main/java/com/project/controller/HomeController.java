@@ -40,14 +40,13 @@ public class HomeController {
             @RequestParam String phone,
             @RequestParam String password) {
 
-        // prevent duplicate email
         if (userRepository.findByEmail(email).isPresent()) {
             return "redirect:/register?error=email";
         }
 
         User user = new User();
         user.setEmail(email);
-        user.setPhone(phone);              // ✅ THIS WAS MISSING
+        user.setPhone(phone);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole("ROLE_USER");
 
