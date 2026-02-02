@@ -1,6 +1,5 @@
 package com.project.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -11,48 +10,49 @@ import com.project.repository.UserRepository;
 @Controller
 public class HomeController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public HomeController(UserRepository userRepository,
+                          PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
-    /* ================= HOME ================= */
     @GetMapping("/")
     public String index() {
-        return "index";   // templates/index.html
+        return "index";
     }
 
-    /* ================= LOGIN ================= */
     @GetMapping("/login")
     public String login() {
-        return "login";   // templates/login.html
+        return "login";
     }
 
-    /* ================= REGISTER PAGE ================= */
     @GetMapping("/register")
-    public String register() {
-        return "register"; // templates/register.html
+    public String registerPage() {
+        return "register";
     }
 
-    /* ================= REGISTER SUBMIT ================= */
     @PostMapping("/register")
     public String registerUser(
+            @RequestParam String name,
             @RequestParam String email,
             @RequestParam String password) {
 
-        // prevent duplicate user
+        // ✅ prevent duplicate email (VERY IMPORTANT)
         if (userRepository.findByEmail(email).isPresent()) {
-            return "redirect:/register?error";
+            return "redirect:/register?error=email";
         }
 
         User user = new User();
+        user.setName(name);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole("ROLE_USER");
 
         userRepository.save(user);
 
-        return "redirect:/login";
+        return "redirect:/login?registered=true";
     }
 }
